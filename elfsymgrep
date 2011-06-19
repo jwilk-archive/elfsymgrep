@@ -1,0 +1,61 @@
+#!/usr/bin/python3
+
+import argparse
+import re
+import subprocess as ipc
+
+regex = re.compile(b'''
+    ^
+    [0-9]+ : \s+
+    [0-9a-f]+ \s+
+    [0-9]+ \s+
+    [A-Z]+ \s+
+    [A-Z]+ \s+
+    [A-Z]+ \s+
+    (?P<def> (?: [A-Z]+ | [0-9]+)) \s*
+    (?P<symbol> \S+)?
+''', re.VERBOSE)
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-u', '--undefined', dest='defined', action='store_const', const=False)
+    parser.add_argument('-d', '--defined', dest='defined', action='store_const', const=True)
+    parser.add_argument('regex', metavar='<regex>')
+    parser.add_argument('filenames', metavar='<elf-file>', nargs='+')
+    options = parser.parse_args()
+    options.regex = re.compile(options.regex)
+    for filename in options.filenames:
+        readelf = ipc.Popen(['readelf', '-s', '-W', '--', filename], stdout=ipc.PIPE)
+        try:
+            for line in readelf.stdout:
+                orig_line, line = line, line.strip()
+                if not line[:1].isdigit():
+                    continue
+                match = regex.match(line)
+                if match is None:
+                    raise RuntimeError('Cannot parse readelf output: {}'.format(repr(orig_line)[1:]))
+                match = match.groupdict()
+                if match['symbol'] is not None:
+                    symbol = match['symbol'].decode('ASCII')
+                    if not options.regex.search(symbol):
+                        continue
+                    defined = match['def'].decode('ASCII')
+                    if defined.isdigit():
+                        if options.defined is False:
+                            continue
+                    elif defined == 'UND':
+                        if options.defined is True:
+                            continue
+                    else:
+                        continue
+                    print('{filename}\t{defined}\t{symbol}'.format(filename=filename, defined=defined, symbol=symbol))
+        finally:
+            readelf.stdout.close()
+            if readelf.wait() != 0:
+                raise RuntimeError('readelf died unexpectedly')
+
+if __name__ == '__main__':
+    main()
+
+
+# vim:ts=4 sw=4 et
