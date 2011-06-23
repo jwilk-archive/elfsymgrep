@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import argparse
+import os
 import re
 import subprocess as ipc
 
@@ -20,11 +21,15 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-u', '--undefined', dest='defined', action='store_const', const=False)
     parser.add_argument('-d', '--defined', dest='defined', action='store_const', const=True)
+    parser.add_argument('-s', '--ignore-symlinks', action='store_const', const=True)
     parser.add_argument('regex', metavar='<regex>')
     parser.add_argument('filenames', metavar='<elf-file>', nargs='+')
     options = parser.parse_args()
     options.regex = re.compile(options.regex)
     for filename in options.filenames:
+        if options.ignore_symlinks:
+            if os.path.islink(filename):
+                continue
         readelf = ipc.Popen(['readelf', '-s', '-W', '--', filename], stdout=ipc.PIPE)
         try:
             for line in readelf.stdout:
