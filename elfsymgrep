@@ -26,6 +26,10 @@ def main():
     parser.add_argument('filenames', metavar='<elf-file>', nargs='+')
     options = parser.parse_args()
     options.regex = re.compile(options.regex)
+    if options.defined is None:
+        template = '{filename}\t{defined}\t{symbol}'
+    else:
+        template = '{filename}\t{symbol}'
     for filename in options.filenames:
         if options.ignore_symlinks:
             if os.path.islink(filename):
@@ -48,12 +52,13 @@ def main():
                     if defined.isdigit():
                         if options.defined is False:
                             continue
+                        defined = ''
                     elif defined == 'UND':
                         if options.defined is True:
                             continue
                     else:
                         continue
-                    print('{filename}\t{defined}\t{symbol}'.format(filename=filename, defined=defined, symbol=symbol))
+                    print(template.format(filename=filename, defined=defined, symbol=symbol))
         finally:
             readelf.stdout.close()
             if readelf.wait() != 0:
