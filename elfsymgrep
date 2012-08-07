@@ -4,6 +4,7 @@ import argparse
 import os
 import re
 import subprocess as ipc
+import warnings
 
 regex = re.compile(b'''
     ^
@@ -62,7 +63,7 @@ def main():
         finally:
             readelf.stdout.close()
             if readelf.wait() != 0:
-                raise RuntimeError('readelf died unexpectedly')
+                warnings.warn('readelf died unexpectedly', category=RuntimeWarning)
 
 if __name__ == '__main__':
     main()
