@@ -24,18 +24,18 @@ def main():
     parser.add_argument('-d', '--defined', dest='defined', action='store_const', const=True)
     parser.add_argument('-s', '--ignore-symlinks', action='store_const', const=True)
     parser.add_argument('regex', metavar='<regex>')
-    parser.add_argument('filenames', metavar='<elf-file>', nargs='+')
+    parser.add_argument('paths', metavar='<elf-file>', nargs='+')
     options = parser.parse_args()
     options.regex = re.compile(options.regex)
     if options.defined is None:
-        template = '{filename}\t{defined}\t{symbol}'
+        template = '{path}\t{defined}\t{symbol}'
     else:
-        template = '{filename}\t{symbol}'
-    for filename in options.filenames:
+        template = '{path}\t{symbol}'
+    for path in options.paths:
         if options.ignore_symlinks:
-            if os.path.islink(filename):
+            if os.path.islink(path):
                 continue
-        readelf = ipc.Popen(['readelf', '-s', '-W', '--', filename], stdout=ipc.PIPE)
+        readelf = ipc.Popen(['readelf', '-s', '-W', '--', path], stdout=ipc.PIPE)
         try:
             for line in readelf.stdout:
                 orig_line, line = line, line.strip()
@@ -59,7 +59,7 @@ def main():
                             continue
                     else:
                         continue
-                    print(template.format(filename=filename, defined=defined, symbol=symbol))
+                    print(template.format(path=path, defined=defined, symbol=symbol))
         finally:
             readelf.stdout.close()
             if readelf.wait() != 0:
