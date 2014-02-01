@@ -4,6 +4,7 @@ import argparse
 import os
 import re
 import subprocess as ipc
+import sys
 import warnings
 
 regex = re.compile(b'''
@@ -17,6 +18,10 @@ regex = re.compile(b'''
     (?P<def> (?: [A-Z]+ | [0-9]+)) \s*
     (?P<symbol> \S+)?
 ''', re.VERBOSE)
+
+def warn(template, **kwargs):
+    message = 'elfsymgrep: ' + template.format(**kwargs)
+    print(message, file=sys.stderr)
 
 def main():
     parser = argparse.ArgumentParser()
@@ -34,6 +39,16 @@ def main():
     for path in options.paths:
         if options.ignore_symlinks:
             if os.path.islink(path):
+                continue
+        try:
+            file = open(path, 'rb')
+        except OSError as exc:
+            warn('{path}: {exc}', exc=exc.args[1].lower(), path=path)
+            continue
+        with file:
+            magic = file.read(4)
+            if magic != b'\x7fELF':
+                warn('{path}: not ELF', path=path)
                 continue
         readelf = ipc.Popen(['readelf', '-s', '-W', '--', path], stdout=ipc.PIPE)
         try:
