@@ -27,7 +27,7 @@ import subprocess as ipc
 import sys
 import warnings
 
-regex = re.compile(b'''
+regex = re.compile(br'''
     ^
     [0-9]+ : \s+
     [0-9a-f]+ \s+
