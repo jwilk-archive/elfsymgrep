@@ -1,11 +1,11 @@
 .. code:: console
 
    $ elfsymgrep --help
-   usage: elfsymgrep [-h] [-u] [-d] [-s] <regex> <elf-file> [<elf-file> ...]
+   usage: elfsymgrep [-h] [-u] [-d] [-s] REGEX ELF-FILE [ELF-FILE ...]
    
    positional arguments:
-     <regex>
-     <elf-file>
+     REGEX
+     ELF-FILE
    
    optional arguments:
      -h, --help            show this help message and exit

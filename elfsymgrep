@@ -31,8 +31,8 @@ def main():
     parser.add_argument('-u', '--undefined', dest='defined', action='store_const', const=False)
     parser.add_argument('-d', '--defined', dest='defined', action='store_const', const=True)
     parser.add_argument('-s', '--ignore-symlinks', action='store_const', const=True)
-    parser.add_argument('regex', metavar='<regex>')
-    parser.add_argument('paths', metavar='<elf-file>', nargs='+')
+    parser.add_argument('regex', metavar='REGEX')
+    parser.add_argument('paths', metavar='ELF-FILE', nargs='+')
     options = parser.parse_args()
     options.regex = re.compile(options.regex)
     if options.defined is None:
